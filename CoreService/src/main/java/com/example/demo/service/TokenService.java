@@ -1,12 +1,9 @@
 package com.example.demo.service;
 
 import com.example.demo.model.constants.Role;
+import com.example.demo.model.domain.user.User;
 import com.example.demo.model.dto.response.UserResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
+import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -17,27 +14,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
 public class TokenService {
 
-  //@Value("${google.oauth.uri}")
   private String oauthUri;
 
-  //@Value("${google.oauth.userInfo.uri}")
   private String oauthUserInfo;
 
-  //@Qualifier("tokenInfoRestTemplate")
   private RestTemplate restTemplate;
+
+  private UserRepository userRepository;
 
   public TokenService(@Value("${google.oauth.uri}") String oauthUri,
                       @Value("${google.oauth.userInfo.uri}") String oauthUserInfo,
-                      @Qualifier("tokenInfoRestTemplate") RestTemplate restTemplate){
+                      @Qualifier("tokenInfoRestTemplate") RestTemplate restTemplate,
+                      UserRepository userRepository){
 
     this.oauthUri = oauthUri;
     this.oauthUserInfo = oauthUserInfo;
     this.restTemplate = restTemplate;
+    this.userRepository = userRepository;
 
   }
 
@@ -49,6 +48,7 @@ public class TokenService {
     try {
       ResponseEntity<Object> responseEntity = restTemplate.exchange(oauthUri, HttpMethod.GET, httpEntity, Object.class);
       int statusCode = responseEntity.getStatusCodeValue();
+      System.out.println(statusCode);
 
       if (statusCode == 200)
         return true;
@@ -69,6 +69,7 @@ public class TokenService {
         int statusCode = responseEntity.getStatusCodeValue();
 
         if (statusCode == 200) {
+          System.out.println(responseEntity.getBody());
           return getUserInfo(responseEntity.getBody().toString());
         }
           else {
@@ -109,6 +110,13 @@ public class TokenService {
         userResponse = new UserResponse(Role.ROLE_STUDENT, email, faculty);
       else
         userResponse = new UserResponse(Role.ROLE_PROFESOR, email, faculty);
+
+      User user = userRepository.findByUsername(email).orElse(null);
+      if(user != null){
+        if(user.getRole().ordinal() < userResponse.getRole().ordinal())
+          userResponse.setRole(user.getRole());
+      }
+
     } else {
       throw new RuntimeException();
     }

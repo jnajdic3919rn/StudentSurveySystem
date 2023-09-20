@@ -56,8 +56,7 @@ public class SecurityFilter extends OncePerRequestFilter {
                 }
                 email = jwtUtils.getUsernameFromToken(jwtToken);
             }
-            System.out.println(email);
-            System.out.println(jwtToken);
+
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 if (jwtUtils.validateToken(jwtToken)) {
@@ -69,13 +68,10 @@ public class SecurityFilter extends OncePerRequestFilter {
                     );
 
                     token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    System.out.println(token);
                     SecurityContextHolder.getContext().setAuthentication(token);
-                    System.out.println(SecurityContextHolder.getContext().getAuthentication());
                 }
             }
             filterChain.doFilter(request, response);
-            System.out.println("Kraj");
         } catch (CantParseJwtException | ExpiredJwtException | MalformedJwtException e) {
             handleJwtException(response, e);
         }

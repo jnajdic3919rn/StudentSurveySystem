@@ -18,7 +18,7 @@ public class SurveyMapper {
     survey.setYear(surveyDataDto.getYear());
     survey.setLink(surveyDataDto.getUrl());
     survey.setType(surveyDataDto.getSurveyType());
-    survey.setFaculty(facultyRepository.findById(1L).get());
+    survey.setFaculty(facultyRepository.findByShortName(surveyDataDto.getFaculty()));
 
     return survey;
   }

@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.constants.Type;
 import com.example.demo.model.dto.basic.ListDto;
+import com.example.demo.model.dto.basic.MessageDto;
 import com.example.demo.model.dto.client.SurveyDataDto;
 import com.example.demo.service.SurveyService;
 import lombok.AllArgsConstructor;
@@ -32,13 +33,18 @@ public class SurveyController {
     return new ResponseEntity<>(surveyService.getSurveys(type, faculty), HttpStatus.OK);
   }
 
+  @GetMapping("/survey/check")
+  public ResponseEntity<MessageDto> getSurveys(@RequestParam String url, @RequestParam String faculty){
+    return new ResponseEntity<>(surveyService.doesExist(url, faculty), HttpStatus.OK);
+  }
+
   @GetMapping("/subject")
   public ResponseEntity<ListDto> getSubjects(@RequestParam Type type, @RequestParam String faculty, @RequestParam String title){
     return new ResponseEntity<>(surveyService.getSubjects(type, faculty, title), HttpStatus.OK);
   }
 
   @DeleteMapping("/survey")
-  public ResponseEntity<String> deleteSurvey(@RequestParam String url){
-    return new ResponseEntity<>(surveyService.deleteSurvey(url), HttpStatus.OK);
+  public ResponseEntity<MessageDto> deleteSurvey(@RequestParam String url, @RequestParam String faculty){
+    return new ResponseEntity<>(surveyService.deleteSurvey(url, faculty), HttpStatus.OK);
   }
 }

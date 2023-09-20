@@ -8,6 +8,7 @@ import com.example.demo.model.domain.survey.Subject;
 import com.example.demo.model.domain.survey.SubjectForSurvey;
 import com.example.demo.model.domain.survey.Survey;
 import com.example.demo.model.dto.basic.ListDto;
+import com.example.demo.model.dto.basic.MessageDto;
 import com.example.demo.model.dto.client.SubjectDataDto;
 import com.example.demo.model.dto.client.SurveyDataDto;
 import com.example.demo.repository.CommentRepository;
@@ -49,7 +50,6 @@ public class SurveyServiceImpl implements SurveyService {
             survey = s;
 
         for(SubjectDataDto subjectDto : surveyDataDto.getSubjectData()) {
-            System.out.println(subjectDto.getSubjectName());
             Subject subject = subjectRepository.findByName(subjectDto.getSubjectName()).orElse(null);
             if(subject == null) {
                 subject = subjectMapper.toSubject(subjectDto.getSubjectName());
@@ -87,21 +87,27 @@ public class SurveyServiceImpl implements SurveyService {
     }
 
     @Override
-    public String deleteSurvey(String url) {
-        Survey survey = surveyRepository.findByLink(url).orElse(null);
+    public MessageDto deleteSurvey(String url, String faculty) {
+        Survey survey = surveyRepository.findByLinkAndFaculty(url, faculty).orElse(null);
 
-        if(survey == null) return "Anketa sa url-om: " + url + " nije pronađena";
-
-        List<Subject> subjects = subjectForSurveyRepository.findSubjectBySurveyLink(url).stream().map(SubjectForSurvey::getSubject).collect(Collectors.toList());
-
-        for(Subject subject : subjects){
-            List<Comment> comments = commentRepository.findComments(survey.getFaculty().getShortName(), survey.getType(), survey.getTitle(), subject.getName(), null);
+        if(survey == null) return new MessageDto("Anketa sa url-om: " + url + " nije pronađena", false);
+        List<SubjectForSurvey> subjectForSurveys = subjectForSurveyRepository.findSubjectBySurveyLink(url);
+        for(SubjectForSurvey subject : subjectForSurveys){
+            List<Comment> comments = commentRepository.findCommentsBySS(subject.getId());
             commentRepository.deleteAll(comments);
         }
 
-        subjectRepository.deleteAll(subjects);
-        //surveyRepository.delete(survey);
+        subjectForSurveyRepository.deleteAll(subjectForSurveys);
+        surveyRepository.delete(survey);
 
-        return "Anketa sa url-om: " + url + " je uspešno obrisana";
+        return new MessageDto("Anketa sa url-om: " + url + " je uspešno obrisana", true);
+    }
+
+    @Override
+    public MessageDto doesExist(String url, String faculty) {
+        Survey survey = surveyRepository.findByLinkAndFaculty(url, faculty).orElse(null);
+        if(survey != null) return new MessageDto("Anketa sa datim url-om je već preuzeta pod nazivom " + survey.getTitle(), true);
+
+        return new MessageDto("Anketa sa datim url-om nije preuzeta", false);
     }
 }

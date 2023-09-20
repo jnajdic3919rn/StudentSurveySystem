@@ -20,4 +20,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "AND (c.subjectForSurvey.survey.faculty.shortName = :faculty)")
     List<Comment> findComments(@Param("faculty") String faculty, @Param("type") Type type, @Param("title") String title, @Param("subject") String subject, @Param("label") Label label);
 
+    @Query("SELECT c FROM Comment c " +
+            "WHERE c.subjectForSurvey.id = :id")
+    List<Comment> findCommentsBySS(@Param("id") Long id);
 }

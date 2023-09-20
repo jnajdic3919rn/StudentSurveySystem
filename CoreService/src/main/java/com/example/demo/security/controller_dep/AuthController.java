@@ -58,9 +58,9 @@ public class AuthController {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         } catch (DisabledException e) {
-            throw new DisabledException("Your account has been disabled", e);
+            throw new DisabledException("Vaš nalog je blokiran", e);
         } catch (Exception e) {
-            throw new BadCredentialsException("Wrong username or password", e);
+            throw new BadCredentialsException("Pogrešan email ili lozinka", e);
         }
     }
 

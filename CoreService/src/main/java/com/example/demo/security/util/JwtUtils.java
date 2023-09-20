@@ -29,9 +29,12 @@ import java.util.stream.Collectors;
 @Component
 public class JwtUtils {
 
-    @Value("${oauth.jwt.secret}")
     private String SECRET_KEY;
     private static final Long TOKEN_EXPIRATION_MIN = 300L;
+
+    public JwtUtils(@Value("${oauth.jwt.secret}") String secretKey){
+        this.SECRET_KEY = secretKey;
+    }
 
     public String generateToken(UserDetails userDetails, String faculty) {
         Map<String, Object> claims = new HashMap<>();
